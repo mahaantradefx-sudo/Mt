@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MT Group TSP 6th BN Mdu - Duty Deployment</title>
 <script>
-var APP_VER=2610170400;
+var APP_VER=2610170500;
 (function(){try{
   var o=localStorage.getItem('duty_ota');
   if(o&&!window.__ota){
@@ -138,6 +138,9 @@ details.vo{margin-bottom:6px}details.vo summary{color:var(--mu);font-size:12px;p
   <div class="row" style="margin-top:0"><button class="btn sec" onclick="document.getElementById('cfile').click()">WhatsApp chat file (.txt)</button></div>
   <div class="hint" style="margin:0 0 4px">WhatsApp group > 3 dots > More > Export chat > Without media. Andha .txt file-a inga select pannunga. Guard, Waiting, Week off, Parade messages ellaam oruthadave update aagum.</div>
   <div class="row"><button class="btn sec" onclick="copyTx()">Copy text</button></div>
+  <div class="hint" style="margin:6px 0 2px">Photo padikka Gemini API key (aistudio.google.com-la free-ah edukkalaam). Idhu indha phone-la mattum save aagum.</div>
+  <input id="gkey" type="password" placeholder="Gemini API key paste pannunga" onchange="gkSave(this.value)" style="width:100%;box-sizing:border-box">
+  <div id="gkst" class="hint"></div>
   <div id="ist" class="hint"></div>
   <div class="row" style="margin:0"><button class="btn sec" id="pstop" style="display:none" onclick="photoStop()">Stop</button></div>
   <label class="hint" style="display:flex;gap:6px;align-items:flex-start;margin:6px 0"><input type="checkbox" id="iauto" onchange="S.auto=this.checked;save()"> <span>Photo padichadhum thaanaave Apply pannu (preview illaama). Default: OFF.</span></label>
@@ -601,6 +604,14 @@ function chain(key,h,old,val){CHX=[];var q=key.split('|'),pid=q[0],d=q[1],nd=nex
   else if(SPAN[ko]&&cur===old&&cur){sv(nk,0,'');CHX.push([nk,0]);return nk}
   return null}
 function refreshCh(){CHX.forEach(function(a){refreshInput(a[0],a[1])});CHX=[]}
+function toast(t){var el=document.getElementById('toast');el.textContent=t;el.classList.add('on');clearTimeout(window.tt);window.tt=setTimeout(function(){el.classList.remove('on')},4000)}
+function takeSlot(key,h,val,pl0){
+  if(!S.excl||!/^s[1-4]$/.test(kind(val)))return [];
+  var q=key.split('|'),d=q[1],pl=pl0===undefined?norm(S.pl[key]||''):pl0,moved=[],v=norm(val);
+  S.names.forEach(function(p){if(p.id===q[0])return;var k2=p.id+'|'+d;if(norm(gv(k2,h))!==v)return;var p2=norm(S.pl[k2]||'');if(p2&&pl&&p2!==pl)return;var old=gv(k2,h);sv(k2,h,'');var nk=chain(k2,h,old,'');if(nk)refreshInput(nk,0);refreshInput(k2,h);moved.push(p.n)});
+  return moved}
+function claim(key,h,val,nk){if(nk&&S.pl[key])S.pl[nk]=S.pl[key];var mv=takeSlot(key,h,val);if(nk)mv=mv.concat(takeSlot(nk,0,val,norm(S.pl[key]||'')));return mv}
+function notify(val,mv){if(mv.length)toast(shortV(val)+' ippo vera aal-ku maarichu. Remove aanavanga: '+mv.join(', '))}
 function refreshInput(key,h){var inp=T.querySelector('td[data-k="'+key+'"] input[data-h="'+h+'"]');if(inp){inp.value=S.short?shortV(gv(key,h)):gv(key,h);inp.dataset.prev=gv(key,h)}}
 function carried(pid,d){var am=S.cells[pid+'|'+d];return !!am&&!!SPAN[kind(am)]&&am===S.pm[pid+'|'+prevDay(d)]}
 function cvals(pid,d){var c=carried(pid,d),pm=S.pm[pid+'|'+d]||'';return [c?'':(S.cells[pid+'|'+d]||''),(c&&kind(pm)==='wo'&&pm===S.cells[pid+'|'+d])?'':pm]}
@@ -738,7 +749,7 @@ function doRead(){
   if(!rows.length&&!unm.length)h='<div class="empty">Number edhuvum kidaikkala. Format check pannunga.</div>';
   document.getElementById('ipv').innerHTML='<div class="pv">'+h+'</div>';
 }
-function openImp(keep){document.getElementById('iexcl').checked=!!S.excl;document.getElementById('iauto').checked=!!S.auto;var i=document.getElementById('idt');if(!keep||!i.value)i.value=S.dates.indexOf(TD)>-1?TD:S.dates[0];if(!keep){document.getElementById('ipv').innerHTML='';document.getElementById('ist').textContent=''}document.getElementById('imp').classList.add('on')}
+function openImp(keep){var gk=document.getElementById('gkey');if(gk)gk.value=gkGet();document.getElementById('iexcl').checked=!!S.excl;document.getElementById('iauto').checked=!!S.auto;var i=document.getElementById('idt');if(!keep||!i.value)i.value=S.dates.indexOf(TD)>-1?TD:S.dates[0];if(!keep){document.getElementById('ipv').innerHTML='';document.getElementById('ist').textContent=''}document.getElementById('imp').classList.add('on')}
 var rdT=null;function rdLater(){OCRFUZZY=false;clearTimeout(rdT);rdT=setTimeout(doRead,500)}
 function closeImp(){document.getElementById('imp').classList.remove('on')}
 function prio(v){var k=kind(v);return !k?0:k==='rc'?1:k==='wo'?4:3}
@@ -787,8 +798,29 @@ function loadScript(src){return new Promise(function(res,rej){var s=document.cre
 var PROMPT='This is a photo of a duty list or a parade / roll-call statement. Transcribe ALL visible text exactly, line by line. Keep every number (G/No), the date, numbered sentry lines like 01) 02), and headings such as Waiting, ON PARADE, ON ROLLCALL, WEEK OFF, and the numbered category rows. Do not summarize or explain. Output only the transcribed text.';
 var PCTL=null;
 function photoStop(){if(PCTL)PCTL.abort()}
+var GMODELS=['gemini-flash-latest','gemini-2.5-flash','gemini-2.0-flash'];
+function gkGet(){try{return localStorage.getItem('dd_gk')||''}catch(e){return ''}}
+function gkSave(v){v=(v||'').trim();try{if(v)localStorage.setItem('dd_gk',v);else localStorage.removeItem('dd_gk')}catch(e){}var el=document.getElementById('gkst');if(el)el.textContent=v?'Gemini key save aachu. Ini photo Gemini-la padikkum.':'Key remove aachu.'}
+async function shrinkImg(f){
+  try{var bm=await createImageBitmap(f),mx=1800,sc=Math.min(1,mx/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=Math.round(bm.width*sc);c.height=Math.round(bm.height*sc);c.getContext('2d').drawImage(bm,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.88).split(',')[1]}
+  catch(e){return await new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(',')[1])};r.onerror=function(){rej(new Error('photo read aagala'))};r.readAsDataURL(f)})}
+}
+async function geminiRead(f,signal){
+  var key=gkGet();if(!key)throw new Error('Gemini key illa');
+  var b=await shrinkImg(f),body=JSON.stringify({contents:[{parts:[{text:PROMPT},{inline_data:{mime_type:'image/jpeg',data:b}}]}],generationConfig:{temperature:0}}),last='';
+  for(var i=0;i<GMODELS.length;i++){
+    var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+GMODELS[i]+':generateContent?key='+encodeURIComponent(key),{method:'POST',headers:{'Content-Type':'application/json'},body:body,signal:signal});
+    if(r.status===404){last='model '+GMODELS[i]+' kidaikkala';continue}
+    var j=await r.json().catch(function(){return null});
+    if(!r.ok){var m=(j&&j.error&&j.error.message)||('HTTP '+r.status);throw new Error(r.status===400&&/API key/i.test(m)?'Gemini key thappu':r.status===429?'Gemini limit mudinjidhu, konjam neram kazhichu try pannunga':'Gemini: '+m)}
+    var t=((j&&j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[]).map(function(p){return p.text||''}).join('');
+    if(!t.trim())throw new Error('Gemini-la text varala');
+    return t}
+  throw new Error(last||'Gemini model illa')
+}
 async function readPhotoText(f,onT){
-  var why='';
+  var why='',gw='';
+  if(gkGet()){PCTL=new AbortController();try{return await geminiRead(f,PCTL.signal)}catch(e){if(e&&e.name==='AbortError')throw new Error('Stop pannitteenga');why=gw=(e&&e.message)||'Gemini error'}finally{PCTL=null}}
   try{
     var sm=window.claude?await claude.use('sample'):null;
     if(sm){
@@ -807,7 +839,7 @@ async function readPhotoText(f,onT){
     var base=new URL('ocr/',document.baseURI).href.replace(/\/$/,'');
     var w=await Tesseract.createWorker('eng',1,{workerPath:base+'/worker.min.js',corePath:base,langPath:base,gzip:true,workerBlobURL:false});
     var r2=await w.recognize(f);await w.terminate();return r2.data.text;
-  }catch(e){throw new Error(why||'photo read aagala')}
+  }catch(e){throw new Error(gw||why||'photo read aagala')}
 }
 function normStmt(t){
   if(/^\s*0?[1-4]\s*[\)\.]\s*\S/m.test(t))return null;
@@ -902,7 +934,7 @@ async function exportPdf(){
   await saveFile(fname('pdf'),doc.output('arraybuffer'));
 }
 /* ---------- palette ---------- */
-var APPV='20261017-0400',UPDATE_URL='https://raw.githubusercontent.com/mahaantradefx-sudo/Duty-deployment-/main/app.html';
+var APPV='20261017-0500',UPDATE_URL='https://raw.githubusercontent.com/mahaantradefx-sudo/Duty-deployment-/main/app.html';
 function reloadApp(){if(isNative())location.href=new URL('index.html',location.href).href;else location.reload()}
 async function updateApp(){
   if(!isNative()){alert('Idhu APK app-la mattum velai seiyum. Web link-la eppavume latest dhaan.');return}
