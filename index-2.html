@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>MT Group TSP 6th BN Mdu - Duty Deployment</title>
+<title>MT Group TSP 6th BN Mdu - Duty Deployment v2</title>
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#eef1f6;--card:#fff;--tx:#16202e;--mu:#64748b;--pr:#1d4ed8;--bd:#d5dbe5;--hd:#e6ebf4;--ok:#0f7a43;--rd:#b42318}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1319;--card:#18202a;--tx:#e9eef5;--mu:#93a1b3;--pr:#5b8cff;--bd:#334052;--hd:#222d3b}}
@@ -9,7 +9,7 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:13px}
-.top{background:linear-gradient(135deg,#0f2a4a,#1f5aa6);color:#fff;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.top{position:relative;background:linear-gradient(135deg,#0f2a4a,#1f5aa6);color:#fff;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:10px}
 .logo{width:40px;height:40px;flex:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
 h1{font-size:13px;margin:0;font-weight:800;letter-spacing:.4px;line-height:1.2}.sub{font-size:10px;opacity:.8;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
@@ -83,7 +83,7 @@ details.vo{margin-bottom:6px}details.vo summary{color:var(--mu);font-size:12px;p
 </style></head><body>
 <header class="top">
   <div class="brand"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f5aa6"/><stop offset="1" stop-color="#0b1d36"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#lg)" stroke="rgba(255,255,255,.28)"/><path d="M32 8 52 15.5V31C52 43 43.5 51.5 32 57 20.5 51.5 12 43 12 31V15.5Z" fill="#16396b" stroke="#f5c542" stroke-width="3" stroke-linejoin="round"/><polygon points="32,16.100 33.900,20.700 38.900,21.100 35.100,24.300 36.300,29.200 32,26.600 27.700,29.200 28.900,24.300 25.100,21.100 30.100,20.700" fill="#f5c542"/><text x="32" y="45" text-anchor="middle" font-family="system-ui,Arial,sans-serif" font-weight="800" font-size="15" fill="#fff">MT</text><rect x="22" y="48" width="20" height="2.500" rx="1.200" fill="#f5c542"/></svg><div><h1>MT GROUP TSP 6TH BN, MDU</h1><div class="sub">Duty Deployment</div></div></div>
-  <div class="mnav"><button onclick="chMonth(-1)" aria-label="Previous month">&#8249;</button><span id="mn"></span><button onclick="chMonth(1)" aria-label="Next month">&#8250;</button></div>
+  <div class="mnav"><button onclick="chMonth(-1)" aria-label="Previous month">&#8249;</button><span id="mn"></span><button onclick="chMonth(1)" aria-label="Next month">&#8250;</button></div><span style="position:absolute;top:1px;right:6px;font-size:8px;opacity:.75;pointer-events:none">v2</span>
 </header>
 <div class="wrap">
 <div class="acts"><button class="btn" onclick="document.getElementById('ifile').click()">Photo update</button><button class="btn" style="background:#0f766e" onclick="openImp()">Text update</button><button class="btn ok" onclick="exportXlsx()">Excel</button><button class="btn red" onclick="exportPdf()">PDF</button></div>
